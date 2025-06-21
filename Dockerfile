@@ -1,26 +1,15 @@
-# Stage 1: Build the React app
-FROM node:18-alpine AS builder
-
-WORKDIR /app
-
-# Install dependencies
-COPY package*.json ./
-RUN npm install
-
-# Copy source code and build
-COPY . .
-RUN npm run build
-
 # Stage 2: Serve with Nginx
 FROM nginx:stable-alpine
 
-# Copy custom Nginx config (optional but recommended)
+# Create a non-root user
+RUN addgroup -g 10014 appgroup && adduser -D -u 10014 -G appgroup appuser
+
+# Set permissions and use the non-root user
 COPY default.conf /etc/nginx/conf.d/default.conf
-
-# Copy build output to Nginx's public directory
 COPY --from=builder /app/build /usr/share/nginx/html
+RUN chown -R appuser:appgroup /usr/share/nginx/html
 
-# Expose port 80
+USER appuser
+
 EXPOSE 80
-
 CMD ["nginx", "-g", "daemon off;"]
