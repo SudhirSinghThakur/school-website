@@ -21,8 +21,9 @@ COPY default.conf /etc/nginx/conf.d/default.conf
 # Copy build artifacts from builder
 COPY --from=builder /app/build /usr/share/nginx/html
 
-# Adjust permissions
-RUN chown -R 10014:10014 /usr/share/nginx/html
+# Create writable temp directories and set permissions
+RUN mkdir -p /tmp/client_temp /tmp/proxy_temp /tmp/fastcgi_temp /tmp/uwsgi_temp /tmp/scgi_temp \
+    && chown -R 10014:10014 /usr/share/nginx/html /tmp
 
 # Use non-root user
 USER 10014
